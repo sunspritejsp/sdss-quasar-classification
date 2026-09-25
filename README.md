@@ -1,6 +1,8 @@
 # SDSS Quasar Classifier
 
-This is a collaborative Machine Learning project aiming to classify astronomical objects (quasars and stars) based on real photometric data extracted from the **Sloan Digital Sky Survey (SDSS)**.
+> **Status:** 🟡 In Active Development (WIP)
+
+This is a Machine Learning project aiming to classify astronomical objects (quasars and stars) based on real photometric data extracted from the **Sloan Digital Sky Survey (SDSS)**.
 
 ---
 
