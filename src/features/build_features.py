@@ -87,7 +87,7 @@ def validate_data(df: pd.DataFrame, expected_rows: int = 99954) -> None:
         raise ValueError(f"Row quantity mismatch, {expected_rows} expected, got {len(df)}")
 
     if df[cols_to_check].isna().any().any():
-        raise ValueError("Found unexpected NaN values in features or taget.")
+        raise ValueError("Found unexpected NaN values in features or target.")
     
     if not np.isfinite(df[cols_to_check].to_numpy()).all():
         raise ValueError("Non-finite values (NaN, inf, or -inf) detected in features or target.")
@@ -98,12 +98,12 @@ def validate_data(df: pd.DataFrame, expected_rows: int = 99954) -> None:
     logger.info("Target class distribution:\n%s", df[TARGET_COL].value_counts(normalize=True))
 
 def save_data(df: pd.DataFrame, output_path: Path) -> None:
-    """Save the engineered dataset with index=False."""
-
+    """Save the engineered dataset with index=False, containing only features and target."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    df.to_csv(output_path, index=False)
-    logger.info(f"Saved dataset with shape {df.shape} to {output_path}.")
+    export_cols = FEATURE_COLS + [TARGET_COL]
+    df[export_cols].to_csv(output_path, index=False)
+    logger.info(f"Saved dataset with shape {df[export_cols].shape} to {output_path}.")
 
 
 def main() -> None:
