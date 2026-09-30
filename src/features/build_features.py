@@ -66,10 +66,10 @@ def encode_target(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def validate_data(df: pd.DataFrame, expected_rows: int = 99954) -> None:
+def validate_data(df: pd.DataFrame, expected_rows: int | None = None) -> None:
     """
-    Validate row counts, ensure no NaN or inf values exist in FEATURE_COLS or TARGET_COL,
-    and verify the target distribution.
+    Validate dataset integrity, ensure no NaN or inf values exist in FEATURE_COLS or TARGET_COL,
+    verify the target distribution, and optionally validate expected row counts.
     """
 
     required_cols = set(FEATURE_COLS + METADATA_COLS + [TARGET_COL])
@@ -81,10 +81,13 @@ def validate_data(df: pd.DataFrame, expected_rows: int = 99954) -> None:
     unique_targets = set(df[TARGET_COL].unique())
     expected_targets = {0, 1}
 
+    if len(df) == 0:
+        raise ValueError("Dataset is empty.")
+
+    if expected_rows is not None and len(df) != expected_rows:
+        raise ValueError(f"Row quantity mismatch, {expected_rows} expected, got {len(df)}")
 
     cols_to_check = FEATURE_COLS + [TARGET_COL]
-    if not  len(df) == expected_rows:
-        raise ValueError(f"Row quantity mismatch, {expected_rows} expected, got {len(df)}")
 
     if df[cols_to_check].isna().any().any():
         raise ValueError("Found unexpected NaN values in features or target.")
@@ -129,13 +132,20 @@ def main() -> None:
         help = "Path where engineered features will be saved",
     )
 
+    parser.add_argument(
+        "--expected-rows",
+        type = int,
+        default = None,
+        help = "Optional expected row count for strict validation",
+    )
+
     args = parser.parse_args()
 
     df = load_data(args.input)
     df = compute_colors(df)
     df = encode_target(df)
 
-    validate_data(df)
+    validate_data(df, expected_rows = args.expected_rows)
     save_data(df, args.output)
 
 if __name__ == "__main__":
