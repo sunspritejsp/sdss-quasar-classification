@@ -1,4 +1,4 @@
-#from astropy import coordinates as coords
+from pathlib import Path
 from astroquery.sdss import SDSS
 import pandas as pd
 
@@ -42,5 +42,13 @@ df_qsos = result_qsos.to_pandas()
 
 df = pd.concat([df_stars, df_qsos], ignore_index=True)
 df = df.sample(frac=1, random_state=13).reset_index(drop=True)
-df.to_csv("sdss_raw.csv", index=False)
+
+proj_root = Path(__file__).resolve().parents[2]
+
+raw_dir = proj_root / "data" / "raw"
+raw_dir.mkdir(parents=True, exist_ok=True)
+raw_data_path = raw_dir / "sdss_raw.csv"
+
+df.to_csv(raw_data_path, index=False)
+print(f"Saved {len(df)} rows to {raw_data_path}")
 print(df["class"].value_counts())
