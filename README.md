@@ -3,26 +3,34 @@
 [![Status: WIP](https://img.shields.io/badge/Status-In%20Development-yellow.svg)](#-project-status--roadmap)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
-A machine learning project designed to classify astronomical objects (**Quasars** vs. **Stars**) using real photometric observations from the **Sloan Digital Sky Survey (SDSS DR16)**.
+A machine learning project designed to classify astronomical objects Quasars vs Stars using real photometric observations from the Sloan Digital Sky Survey Data Release 16.
 
 ---
 
 ## Context
 
-Differentiating common stars from quasars (distant, supermassive active galactic nuclei) is a foundational challenge in observational astrophysics. Due to the cosmological expansion of the universe, light emitted by quasars undergoes redshift ($z$), shifting key emission lines and spectral continuum slopes across photometric passbands. 
+In optical sky surveys, quasars (distant Active Galactic Nuclei) and foreground Milky Way stars appear almost identical as unresolved point sources. Classifying them photometrically, without needing expensive spectroscopic follow up, is a big challenge in astronomy.
 
-This pipeline uses classification algorithms to learn these distinct spectral distributions across the SDSS 5-band photometric filter system:
+While both look like points of light, their underlying physics are very distinct:
+* **Stars** are thermal emitters within our galaxy. Their spectra are regulated by surface temperature, forming a predictable sequence from hot O/B stars down to cool M dwarfs.
+* **Quasars** are supermassive black holes actively accreting matter in distant galaxies. Their spectra are non-thermal, characterized by strong ultraviolet emission and cosmic redshift ($z$) that shifts emission lines across optical wavelengths.
+
+SDSS captures this light across a 5-band filter system:
 * **`u`**: Ultraviolet
 * **`g`**: Green
 * **`r`**: Red
 * **`i`**: Near-Infrared
 * **`z`**: Far-Infrared
 
-### Feature Engineering
-To capture spectral slopes independently of total apparent brightness or distance, the pipeline computes adjacent **astronomical color indices**:
-$$\Delta \text{color} \in \{ (u - g), (g - r), (r - i), (i - z) \}$$
-These color differentials help separate quasar redshift tracks from the stellar locus in multi-dimensional color space.
+### Feature Engineering: Color Indices
+Apparent brightness alone cannot classify an object because distance and luminosity are entangled—a faint reading could mean an object is inherently dim or simply billions of light-years away.
 
+To remove distance dependence and capture spectral shape, the pipeline computes astronomical color indices by taking magnitude differences between adjacent filters:
+$$\Delta \text{color} \in \{ (u - g), (g - r), (r - i), (i - z) \}$$
+
+In color space, the populations separate cleanly:
+* Stellar Locus: normal stars trace a distinct, tight sequence determined by stellar temperatures.
+* Quasar Region: quasars break away from this locus due to their characteristic UV excess and redshifted emission lines, allowing classification models to learn effective decision boundaries.
 <p align="center">
   <img src="reports/figures/color_color_u_g_vs_g_r.png" alt="SDSS Color-Color Diagram: u-g vs g-r" width="550"/>
 </p>
@@ -69,18 +77,17 @@ sdss-quasar-classification/
 
 ## Baseline Model Benchmarks
 
-Models were evaluated on a held-out stratified test set (20%, $N = 19,890$, `random_state=13`):
+Models were evaluated on a held-out stratified test set (20%, $N = 19,992$, `random_state=13`). Metrics report Quasar (`QSO`) classification performance:
 
-| Model | Test Accuracy | ROC-AUC | Key Characteristics |
-| :--- | :---: | :---: | :--- |
-| **Dummy Classifier** | 50.0% | 0.50 | Uniform random baseline |
-| **Gaussian Naive Bayes** | 72.7% | 0.91 | Fast probabilistic baseline |
-| **Logistic Regression** | 91.3% | 0.93 | Standardized linear decision boundary |
-| **Random Forest (100 trees)** | 95.7% | 0.99 | Non-linear ensemble resolving stellar locus curvature |
+| Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC | Key Characteristics |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Dummy Classifier** | 50.0% | 0.50 | 0.50 | 0.50 | 0.50 | Uniform random baseline |
+| **Gaussian Naive Bayes** | 72.7% | 0.67 | 0.90 | 0.77 | 0.91 | Fast baseline; high recall, high star contamination |
+| **Logistic Regression** | 91.3% | 0.91 | 0.92 | 0.91 | 0.93 | Standardized linear decision boundary |
+| **Random Forest (100 trees)** | **95.7%** | **0.96** | **0.96** | **0.96** | **0.99** | Non-linear ensemble resolving stellar locus curvature |
 
 <p align="center">
   <img src="reports/figures/roc_curves_baseline.png" alt="Multi-Model ROC Curves" width="48%"/>
-  <img src="reports/figures/confusion_matrix_baseline.png" alt="Baseline Confusion Matrix" width="48%"/>
 </p>
 
 ---
@@ -113,7 +120,7 @@ pip install -r requirements.txt
 The pipeline scripts can be run sequentially from the project root:
 
 ```bash
-# 1. (Optional) Query SDSS DR16 via Astroquery to fetch raw data
+# 1. Query SDSS DR16 via Astroquery to fetch raw data
 python src/data/download_data.py
 
 # 2. Clean data and apply quality filters (outputs to data/processed/sdss_clean.csv)
