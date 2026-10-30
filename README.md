@@ -30,19 +30,21 @@ These color differentials help separate quasar redshift tracks from the stellar 
 ```text
 sdss-quasar-classification/
 ├── data/
-│   ├── raw/                    # Raw extracted SDSS DR16 data (sdss_raw.csv)
-│   └── processed/              # Cleaned datasets and engineered feature matrices
+│   ├── raw/                            # Raw extracted SDSS DR16 data (sdss_raw.csv)
+│   └── processed/                      # Cleaned datasets and engineered feature matrices
+├── models/                             # Serialized Scikit-Learn pipelines (.joblib, git-ignored)
 ├── notebooks/
 │   ├── 01_exploratory_audit.ipynb      # Initial exploratory inspection
-│   └── 02_feature_engineering.ipynb    # Feature prototyping & validation
+│   ├── 02_feature_engineering.ipynb    # Feature prototyping & validation
+│   ├── 03_eda_visualizations.ipynb     # Color-color diagrams & distribution comparisons
+│   └── 04_baseline_models.ipynb        # Baseline model training & evaluation
+├── reports/
+│   └── figures/                        # Exported publication-ready plots (.png)
 ├── src/
-│   ├── data/
-│   │   ├── download_data.py    # Astroquery SDSS DR16 SQL extractor
-│   │   └── clean_data.py       # Data validation & outlier filtering
-│   └── features/
-│       └── build_features.py   # CLI pipeline for color indices & target encoding
-├── environment.yml             # Conda environment configuration
-├── requirements.txt            # Pip dependencies specification
+│   ├── data/                           # Data download and sanitization scripts
+│   └── features/                       # Feature extraction & encoding pipeline
+├── environment.yml                     # Conda environment configuration
+├── requirements.txt                    # Pip dependencies specification
 └── README.md
 ```
 
@@ -50,13 +52,31 @@ sdss-quasar-classification/
 
 ## Project Status & Roadmap
 
-- [x] **Data Ingestion & Extraction** (SDSS DR16 balanced SQL query: 50,000 stars & 50,000 QSOs with `clean = 1` and `zWarning = 0`)
-- [x] **Data Cleaning** (Filtered sentinel `-9999` values, faint magnitudes $> 30$, and inconsistent QSO redshifts)
-- [x] **Feature Engineering** (Computed adjacent color indices and binary target encoding; metadata is strictly excluded to prevent data leakage)
-- [ ] **Exploratory Data Analysis (EDA)** (Color-color diagrams and distribution comparisons)
-- [ ] **Modeling** (Baseline classifiers, Decision Trees / Random Forests, Gradient Boosting)
-- [ ] **Evaluation & Diagnostics** (ROC-AUC, Precision-Recall, Confusion Matrices, and error analysis)
-- [ ] **Documentation & Polishing**
+- [x] **Data Ingestion & Extraction** (Issue #1: SDSS DR16 SQL query via Astroquery: 50,000 stars & 50,000 QSOs)
+- [x] **Data Cleaning** (Issue #2: Filtered `-9999` sentinels, faint magnitudes $> 30$, and inconsistent redshifts)
+- [x] **Feature Engineering** (Issue #3: Computed adjacent color indices with metadata strictly segregated)
+- [x] **Exploratory Data Analysis (EDA)** (Issue #4: Color-color diagrams, correlation matrices, and distribution analysis)
+- [x] **Model Training** (Issue #5: Scikit-Learn pipelines for Logistic Regression and Random Forest)
+- [ ] **Evaluation & Error Analysis** (Issue #6: In-depth metrics, feature importances, and misclassified star/quasar inspection)
+- [ ] **Documentation & Final Release** (Issue #7: Comprehensive documentation, dependency audit, and v1.0.0 release)
+
+---
+
+## Baseline Model Benchmarks
+
+Models were evaluated on a held-out stratified test set (20%, $N = 19,890$, `random_state=13`):
+
+| Model | Test Accuracy | ROC-AUC | Key Characteristics |
+| :--- | :---: | :---: | :--- |
+| **Dummy Classifier** | 50.0% | 0.50 | Uniform random baseline |
+| **Gaussian Naive Bayes** | 72.7% | 0.91 | Fast probabilistic baseline |
+| **Logistic Regression** | 91.3% | 0.93 | Standardized linear decision boundary |
+| **Random Forest (100 trees)** | 95.7% | 0.99 | Non-linear ensemble resolving stellar locus curvature |
+
+<p align="center">
+  <img src="reports/figures/roc_curves_baseline.png" alt="Multi-Model ROC Curves" width="48%"/>
+  <img src="reports/figures/confusion_matrix_baseline.png" alt="Baseline Confusion Matrix" width="48%"/>
+</p>
 
 ---
 
