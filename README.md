@@ -23,6 +23,11 @@ To capture spectral slopes independently of total apparent brightness or distanc
 $$\Delta \text{color} \in \{ (u - g), (g - r), (r - i), (i - z) \}$$
 These color differentials help separate quasar redshift tracks from the stellar locus in multi-dimensional color space.
 
+<p align="center">
+  <img src="reports/figures/color_color_u_g_vs_g_r.png" alt="SDSS Color-Color Diagram: u-g vs g-r" width="550"/>
+</p>
+
+
 ---
 
 ## Project Structure
