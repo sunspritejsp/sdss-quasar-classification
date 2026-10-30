@@ -222,3 +222,5 @@ __marimo__/
 .vscode
 
 prompts/
+models/*.joblib
+models/*.pkl
